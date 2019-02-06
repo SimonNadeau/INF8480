@@ -5,18 +5,24 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.lang.Math.*;
 
 import ca.polymtl.inf8480.tp1.shared.ServerInterface;
 
 public class Client {
+
+	private byte[] bytes;
+
 	public static void main(String[] args) {
 		String distantHostname = null;
+		int length = 0;
 
 		if (args.length > 0) {
 			distantHostname = args[0];
+			length = Integer.parseInt(args[1]);
 		}
 
-		Client client = new Client(distantHostname);
+		Client client = new Client(distantHostname, length);
 		client.run();
 	}
 
@@ -25,8 +31,10 @@ public class Client {
 	private ServerInterface localServerStub = null;
 	private ServerInterface distantServerStub = null;
 
-	public Client(String distantServerHostname) {
+	public Client(String distantServerHostname, int length) {
 		super();
+
+		bytes = new byte[(int)Math.pow(10, (double)length)];
 
 		if (System.getSecurityManager() == null) {
 			System.setSecurityManager(new SecurityManager());
@@ -72,23 +80,23 @@ public class Client {
 
 	private void appelNormal() {
 		long start = System.nanoTime();
-		int result = localServer.execute(4, 7);
+		localServer.execute(bytes);
 		long end = System.nanoTime();
 
 		System.out.println("Temps écoulé appel normal: " + (end - start)
 				+ " ns");
-		System.out.println("Résultat appel normal: " + result);
+		System.out.println("Résultat appel normal: " + String.valueOf(bytes.length));
 	}
 
 	private void appelRMILocal() {
 		try {
 			long start = System.nanoTime();
-			int result = localServerStub.execute(4, 7);
+			localServerStub.execute(bytes);
 			long end = System.nanoTime();
 
 			System.out.println("Temps écoulé appel RMI local: " + (end - start)
 					+ " ns");
-			System.out.println("Résultat appel RMI local: " + result);
+			System.out.println("Résultat appel RMI local: " + String.valueOf(bytes.length));
 		} catch (RemoteException e) {
 			System.out.println("Erreur: " + e.getMessage());
 		}
@@ -97,12 +105,12 @@ public class Client {
 	private void appelRMIDistant() {
 		try {
 			long start = System.nanoTime();
-			int result = distantServerStub.execute(4, 7);
+			distantServerStub.execute(bytes);
 			long end = System.nanoTime();
 
 			System.out.println("Temps écoulé appel RMI distant: "
 					+ (end - start) + " ns");
-			System.out.println("Résultat appel RMI distant: " + result);
+			System.out.println("Résultat appel RMI distant: " + String.valueOf(bytes.length));
 		} catch (RemoteException e) {
 			System.out.println("Erreur: " + e.getMessage());
 		}

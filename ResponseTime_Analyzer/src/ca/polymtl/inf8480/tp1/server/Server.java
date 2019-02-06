@@ -42,11 +42,9 @@ public class Server implements ServerInterface {
 	}
 
 	/*
-	 * Méthode accessible par RMI. Additionne les deux nombres passés en
-	 * paramètre.
+	 * Méthode accessible par RMI. Ne fait rien, mais prend un tableau de taille variable en argument.
 	 */
 	@Override
-	public int execute(int a, int b) throws RemoteException {
-		return a + b;
+	public void execute(byte[] bytes) throws RemoteException {
 	}
 }
