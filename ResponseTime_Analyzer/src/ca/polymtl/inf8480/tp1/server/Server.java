@@ -25,8 +25,7 @@ public class Server implements ServerInterface {
 		}
 
 		try {
-			ServerInterface stub = (ServerInterface) UnicastRemoteObject
-					.exportObject(this, 0);
+            ServerInterface stub = (ServerInterface) UnicastRemoteObject.exportObject(this, 0);
 
 			Registry registry = LocateRegistry.getRegistry();
 			registry.rebind("server", stub);
@@ -45,6 +44,6 @@ public class Server implements ServerInterface {
 	 * Méthode accessible par RMI. Ne fait rien, mais prend un tableau de taille variable en argument.
 	 */
 	@Override
-	public void execute(byte[] bytes) throws RemoteException {
+	public void execute() throws RemoteException {
 	}
 }

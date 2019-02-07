@@ -6,58 +6,113 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.lang.Math.*;
+import java.util.InputMismatchException;
+import java.util.Scanner;
 
 import ca.polymtl.inf8480.tp1.shared.ServerInterface;
 
 public class Client {
 
-	private byte[] bytes;
-
 	public static void main(String[] args) {
 		String distantHostname = null;
-		int length = 0;
 
 		if (args.length > 0) {
 			distantHostname = args[0];
-			length = Integer.parseInt(args[1]);
 		}
 
-		Client client = new Client(distantHostname, length);
-		client.run();
+		Client client = new Client(distantHostname);
+		client.menu();
 	}
-
-	FakeServer localServer = null; // Pour tester la latence d'un appel de
-									// fonction normal.
 	private ServerInterface localServerStub = null;
 	private ServerInterface distantServerStub = null;
 
-	public Client(String distantServerHostname, int length) {
+	public Client(String distantServerHostname) {
 		super();
-
-		bytes = new byte[(int)Math.pow(10, (double)length)];
 
 		if (System.getSecurityManager() == null) {
 			System.setSecurityManager(new SecurityManager());
 		}
-
-		localServer = new FakeServer();
 		localServerStub = loadServerStub("127.0.0.1");
 
 		if (distantServerHostname != null) {
 			distantServerStub = loadServerStub(distantServerHostname);
 		}
-	}
+    }
+
+    private void printMenu() {
+
+        System.out.println(" --- Menu --- ");
+        System.out.println(" 1 - Read ");
+        System.out.println(" 2 - Send ");
+        System.out.println(" 3 - Delete ");
+        System.out.println(" 4 - List ");
+        System.out.println(" 5 - Search ");
+        System.out.println(" 6 - Lock Group List ");
+        System.out.println(" 7 - Create Group ");
+        System.out.println(" 8 - Join Group ");
+        System.out.println(" 9 - Publish Group List ");
+        System.out.println(" 0 - Exit ");
+    }
+    
+    private void menu() {
+        String command = "";
+        Scanner reader = new Scanner(System.in);  // Reading from System.in
+        
+        while(!command.equals("0")) {
+            printMenu();
+            try {
+                command = reader.next();
+            } catch (InputMismatchException e) {
+            }
+
+            switch (command) {
+                case "1":
+                    System.out.println("read");
+                    break;
+                case "2":
+                    System.out.println("send");
+                    break;
+                case "3":
+                    System.out.println("delete");
+                    break;
+                case "4":
+                    System.out.println("list");
+                    break;
+                case "5":
+                    System.out.println("search");
+                    break;
+                case "6":
+                    System.out.println("Lock Group List");
+                    break;
+                case "7":
+                    System.out.println("Create Group");
+                    break;
+                case "8":
+                    System.out.println("Join Group");
+                    break;
+                case "9":
+                    System.out.println("Publish Group List");
+                    break;
+                case "0":
+                    System.out.println("Exit");
+                    break;
+                default:
+                    System.out.println("Opération invalide.\nChoisissez un commande de 0 à 9");
+                    break;
+            }
+        }
+        reader.close();
+    }
 
 	private void run() {
-		appelNormal();
 
 		if (localServerStub != null) {
 			appelRMILocal();
 		}
 
-		if (distantServerStub != null) {
-			appelRMIDistant();
-		}
+		// if (distantServerStub != null) {
+		// 	appelRMIDistant();
+		// }
 	}
 
 	private ServerInterface loadServerStub(String hostname) {
@@ -78,41 +133,31 @@ public class Client {
 		return stub;
 	}
 
-	private void appelNormal() {
-		long start = System.nanoTime();
-		localServer.execute(bytes);
-		long end = System.nanoTime();
-
-		System.out.println("Temps écoulé appel normal: " + (end - start)
-				+ " ns");
-		System.out.println("Résultat appel normal: " + String.valueOf(bytes.length));
-	}
-
 	private void appelRMILocal() {
 		try {
 			long start = System.nanoTime();
-			localServerStub.execute(bytes);
+			localServerStub.execute();
 			long end = System.nanoTime();
 
 			System.out.println("Temps écoulé appel RMI local: " + (end - start)
 					+ " ns");
-			System.out.println("Résultat appel RMI local: " + String.valueOf(bytes.length));
+			System.out.println("Résultat appel RMI local: ");
 		} catch (RemoteException e) {
 			System.out.println("Erreur: " + e.getMessage());
 		}
 	}
 
-	private void appelRMIDistant() {
-		try {
-			long start = System.nanoTime();
-			distantServerStub.execute(bytes);
-			long end = System.nanoTime();
+	// private void appelRMIDistant() {
+	// 	try {
+	// 		long start = System.nanoTime();
+	// 		distantServerStub.execute(1);
+	// 		long end = System.nanoTime();
 
-			System.out.println("Temps écoulé appel RMI distant: "
-					+ (end - start) + " ns");
-			System.out.println("Résultat appel RMI distant: " + String.valueOf(bytes.length));
-		} catch (RemoteException e) {
-			System.out.println("Erreur: " + e.getMessage());
-		}
-	}
+	// 		System.out.println("Temps écoulé appel RMI distant: "
+	// 				+ (end - start) + " ns");
+	// 		System.out.println("Résultat appel RMI distant: " + String.valueOf(bytes.length));
+	// 	} catch (RemoteException e) {
+	// 		System.out.println("Erreur: " + e.getMessage());
+	// 	}
+	// }
 }
