@@ -1,0 +1,6 @@
+group1 a b c mathieu@poly.ca simon@poly.ca
+group2 a c
+group3 nadeau@poly.ca chateauvert@poly.ca
+fresh
+test
+finance@poly.ca

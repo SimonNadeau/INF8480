@@ -1,0 +1,4 @@
+group1 a b c mathieu@poly.ca simon@poly.ca
+group2 a c
+group3 nadeau@poly.ca chateauvert@poly.ca
+group4 a b
