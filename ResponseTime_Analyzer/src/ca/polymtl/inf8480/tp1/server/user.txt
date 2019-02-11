@@ -1,7 +1,0 @@
-mathieu@poly.ca allo1
-simon@poly.ca allo2
-chateauvert@poly.ca allo3
-nadeau@poly.ca allo4
-a a
-b b
-c c

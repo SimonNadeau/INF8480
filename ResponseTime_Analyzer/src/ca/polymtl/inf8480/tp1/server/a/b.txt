@@ -1,6 +1,0 @@
-read
-a
-b
-bb
-bbbb
-bbb
