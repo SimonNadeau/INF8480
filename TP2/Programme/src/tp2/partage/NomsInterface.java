@@ -5,7 +5,5 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 
 public interface NomsInterface extends Remote {
-
-    //int openSession(String login) throws RemoteException;
-    ArrayList<ArrayList<String>> getCalculServerInfos() throws RemoteException;
+    ArrayList<String> getCalculServerHostnames() throws RemoteException;
 }

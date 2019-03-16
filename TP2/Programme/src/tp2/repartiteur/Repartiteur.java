@@ -31,8 +31,6 @@ public class Repartiteur {
 	private NomsInterface nomsServerStub = null;
 	private ArrayList<CalculInterface> calculServerStubs = null;
 
-	private ArrayList<ArrayList<String>> calculServerInfos = null;
-
 	public Repartiteur() {
 		super();
 
@@ -43,11 +41,12 @@ public class Repartiteur {
 		nomsServerStub = loadNomsServerStub("127.0.0.1");
 		if (nomsServerStub != null) {
 			calculServerStubs = new ArrayList<CalculInterface>();
+			ArrayList<String> calculServerHostnames = null;
 			try {
-				calculServerInfos = nomsServerStub.getCalculServerInfos();
+				calculServerHostnames = nomsServerStub.getCalculServerHostnames();
 
-				for (ArrayList<String> calculServer : calculServerInfos) {
-					calculServerStubs.add(loadCalculServerStub(calculServer.get(0)));
+				for (String calculServerHostname : calculServerHostnames) {
+					calculServerStubs.add(loadCalculServerStub(calculServerHostname));
 				}
 			} catch (RemoteException e) {
 				System.out.println("Erreur: " + e.getMessage());
