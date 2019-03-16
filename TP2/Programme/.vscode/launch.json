@@ -1,0 +1,11 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "CodeLens (Launch) - Calcul",
+            "request": "launch",
+            "mainClass": "tp2.calcul.Calcul",
+            "projectName": "TP2.1"
+        }
+    ]
+}

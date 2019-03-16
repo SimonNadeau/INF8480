@@ -16,6 +16,7 @@
 		<delete dir="bin" />
 		<delete file="calcul.jar" />
 		<delete file="repartiteur.jar" />
+		<delete file="pnoms.jar" />
 		<delete file="partage.jar" />
 	</target>
 	<target depends="init" name="build-class">
@@ -27,6 +28,7 @@
 	<target depends="build-class" name="build-jar">
 		<jar destfile="partage.jar" basedir="bin" includes="tp2/partage/**" update="false" />
 		<jar destfile="calcul.jar" basedir="bin" includes="tp2/calcul/**" update="false" />
+		<jar destfile="noms.jar" basedir="bin" includes="tp2/noms/**" update="false" />
 		<jar destfile="repartiteur.jar" basedir="bin" includes="tp2/repartiteur/**" update="false" />
 	</target>
 </project>

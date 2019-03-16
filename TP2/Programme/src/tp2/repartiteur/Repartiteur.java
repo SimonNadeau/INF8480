@@ -1,11 +1,18 @@
 package tp2.repartiteur;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.rmi.AccessException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.ArrayList;
+import java.lang.Math;
+
 
 import tp2.partage.*;
 
@@ -28,6 +35,7 @@ public class Repartiteur {
 		System.out.println(resultat);
 	}
 
+    private static final int TAUX_DE_REFUS = 15;
 	private NomsInterface nomsServerStub = null;
 	private ArrayList<CalculInterface> calculServerStubs = null;
 
@@ -41,12 +49,12 @@ public class Repartiteur {
 		nomsServerStub = loadNomsServerStub("127.0.0.1");
 		if (nomsServerStub != null) {
 			calculServerStubs = new ArrayList<CalculInterface>();
-			ArrayList<String> calculServerHostnames = null;
+			ArrayList<ArrayList<String>> calculServerInfos = null;
 			try {
-				calculServerHostnames = nomsServerStub.getCalculServerHostnames();
+				calculServerInfos = nomsServerStub.getCalculServerInfos();
 
-				for (String calculServerHostname : calculServerHostnames) {
-					calculServerStubs.add(loadCalculServerStub(calculServerHostname));
+				for (ArrayList<String> calculServerInfo : calculServerInfos) {
+                    calculServerStubs.add(loadCalculServerStub(calculServerInfo.get(0)));
 				}
 			} catch (RemoteException e) {
 				System.out.println("Erreur: " + e.getMessage());
@@ -91,10 +99,62 @@ public class Repartiteur {
 	}
 
 	private int process(String fileName) {
-		int resultat = 0;
+        int resultat = 0;
+        int chunkSize = 1;
 
-		return resultat;
-	}
+        ArrayList<String> listOperation = readFile(fileName);
+
+        try {
+            chunkSize = calculateChunkSize(Integer.parseInt(nomsServerStub.getCalculServerInfos().get(0).get(1)));
+            System.out.println(chunkSize);
+        } catch (RemoteException e) {
+			System.out.println("Erreur: " + e.getMessage());
+		}
+
+        while (!listOperation.isEmpty()) {
+            System.out.println("Nouveau Chunk");
+            ArrayList<String> operations = new ArrayList<String>();
+            int i = 0;
+            while (i < chunkSize && !listOperation.isEmpty()) {
+                String item = listOperation.remove(listOperation.size()-1);
+                operations.add(item);
+                i += 1;
+            }
+            // Thread
+            try {
+                int partialResult = calculServerStubs.get(0).calculate(operations);
+                System.out.println(String.valueOf(partialResult));
+                resultat += partialResult;
+            } catch (RemoteException e) {
+                System.out.println("Erreur: " + e.getMessage());
+            }
+        }
+
+		return resultat%5000;
+    }
+    
+    private ArrayList<String> readFile(String fileName){
+        ArrayList<String> listOperation = new ArrayList<String>();
+
+        try {
+            File file = new File(fileName);
+            FileReader fr = new FileReader(file);
+            BufferedReader br = new BufferedReader(fr);
+            String line = "";
+            while((line = br.readLine()) != null){
+                listOperation.add(line);
+            }
+        } catch (FileNotFoundException e){
+            System.out.println("Erreur: " + e.getMessage());
+        } catch (IOException e) {
+            System.out.println("Erreur: " + e.getMessage());
+        }
+        return listOperation;
+    }
+
+    private int calculateChunkSize(int ressources) {
+        return (int)Math.floor(5*ressources * TAUX_DE_REFUS/100 + ressources);
+    }
 
 }
 

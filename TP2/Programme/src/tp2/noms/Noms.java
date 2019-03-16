@@ -22,11 +22,6 @@ public class Noms implements NomsInterface {
 		super();
 		
 		calculServerInfos = new ArrayList<ArrayList<String>>();
-
-		//TODO: retirer cette partie quand les serveurs de calcul vont envoyer leurs infos
-		ArrayList<String> calculServerInfo = new ArrayList<String>();
-		calculServerInfo.add("127.0.0.1");
-		calculServerInfos.add(calculServerInfo);
 	}
 
 	private void run() {
@@ -47,16 +42,15 @@ public class Noms implements NomsInterface {
 		} catch (Exception e) {
 			System.err.println("Erreur1: " + e);
 		}
-	}
+    }
+    
+    @Override
+    public void addInfo(ArrayList<String> info) throws RemoteException {
+        calculServerInfos.add(info);
+    }
 
     @Override
-    public ArrayList<String> getCalculServerHostnames() throws RemoteException {
-		ArrayList<String> calculServerHostnames = new ArrayList<String>();
-		
-		for (ArrayList<String> calculServerInfo : calculServerInfos) {
-			calculServerHostnames.add(calculServerInfo.get(0));
-		}
-
-        return calculServerHostnames;
+    public ArrayList<ArrayList<String>> getCalculServerInfos() throws RemoteException {
+        return calculServerInfos;
     }
 }
