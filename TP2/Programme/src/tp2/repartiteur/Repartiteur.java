@@ -45,7 +45,7 @@ public class Repartiteur {
 			System.setSecurityManager(new SecurityManager());
 		}
 
-		nomsServerStub = loadNomsServerStub("127.0.0.1");
+		nomsServerStub = loadNomsServerStub("10.10.5.116");
 		if (nomsServerStub != null) {
 			calculServerStubs = new ArrayList<CalculInterface>();
 			ArrayList<ArrayList<String>> calculServerInfos = null;

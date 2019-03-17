@@ -50,14 +50,24 @@ public class Calcul implements CalculInterface {
 		try {
             CalculInterface stub = (CalculInterface) UnicastRemoteObject.exportObject(this, 0);
             
-			Registry registry = LocateRegistry.getRegistry();
-            registry.rebind("calcul", stub);
-            System.out.println(String.valueOf(registry.REGISTRY_PORT));
+            // Registry registry = LocateRegistry.getRegistry();
+            NomsInterface stub2 = null;
+            Registry registry = null;
+            try {
+                registry = LocateRegistry.getRegistry("10.10.5.116");
+                stub2 = (NomsInterface) registry.lookup("noms");
+            } catch (NotBoundException e) {
+                System.out.println("Erreur: Le nom '" + e.getMessage()
+                        + "' n'est pas défini dans le registre.");
+            } catch (AccessException e) {
+                System.out.println("Erreur: " + e.getMessage());
+            } catch (RemoteException e) {
+                System.out.println("Erreur: " + e.getMessage());
+            }
+            registry.rebind("calcul", stub2);
+            nomsServerStub = stub2;
             
             System.out.println("Server ready.");
-
-            nomsServerStub = loadNomsServerStub("127.0.0.1");
-
             if (nomsServerStub != null) {
                 ArrayList<String> info = new ArrayList<String>();
                 info.add(getIP());
