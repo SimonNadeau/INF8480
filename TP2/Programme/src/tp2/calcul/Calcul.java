@@ -19,8 +19,6 @@ public class Calcul implements CalculInterface {
 
     private int numberOfTasks;
     private int maliciousness;
-    private String username; 
-    private String password;
     private String registryName;
     private NomsInterface nomsServerStub = null;
 
@@ -65,6 +63,7 @@ public class Calcul implements CalculInterface {
                 info.add(getIP());
                 info.add(String.valueOf(numberOfTasks));
                 info.add(registryName);
+                info.add(String.valueOf(maliciousness));
                 nomsServerStub.addInfo(info);
             }
 
