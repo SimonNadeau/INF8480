@@ -11,6 +11,9 @@ import tp2.partage.NomsInterface;
 
 public class Noms implements NomsInterface {
 
+    private String repartiteurUsername = "";
+    private String repartiteurPassword = "";
+
 	public static void main(String[] args) {
 		Noms calcul = new Noms();
 		calcul.run();
@@ -52,5 +55,20 @@ public class Noms implements NomsInterface {
     @Override
     public ArrayList<ArrayList<String>> getCalculServerInfos() throws RemoteException {
         return calculServerInfos;
+    }
+
+    @Override
+    public void addClient(String username, String password) throws RemoteException {
+        repartiteurUsername = username;
+        repartiteurPassword = password;
+    }
+
+    @Override
+    public boolean authentificationClient(String username, String password) throws RemoteException {
+        if (username.equals(repartiteurUsername) && password.equals(repartiteurPassword)){
+            return true;
+        } else {
+            return false;
+        }
     }
 }

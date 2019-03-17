@@ -6,7 +6,7 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.concurrent.Callable;
 
-enum SatutResultat {
+enum StatutResultat {
     OK, REFUSED, BAD_AUTHENTIFICATION, BAD_NAMESERVER, RMI_EXCEPTION
 }
 
@@ -36,10 +36,10 @@ public class Task implements Callable<Task.TaskInfo> {
         private String serveurNom;
         private ArrayList<String> listOperation;
         private int resultat;
-        private SatutResultat statut;
+        private StatutResultat statut;
         private int chunkID;
 
-        TaskInfo(String taskNom, ArrayList<String> taskOperations, int result, SatutResultat statutResultat, int chunkNumber) {
+        TaskInfo(String taskNom, ArrayList<String> taskOperations, int result, StatutResultat statutResultat, int chunkNumber) {
             serveurNom = taskNom;
             listOperation = taskOperations;
             resultat = result;
@@ -51,7 +51,7 @@ public class Task implements Callable<Task.TaskInfo> {
             return resultat;
         }
 
-        public SatutResultat getStatut() {
+        public StatutResultat getStatut() {
             return statut;
         }
 
@@ -73,19 +73,19 @@ public class Task implements Callable<Task.TaskInfo> {
         try {
             int resultat = serveurInterface.calculate(listOperation, repartiteurNom, repartiteurMDP);
             if (resultat >= 0) {
-                statut = new TaskInfo(serveurNom, listOperation, resultat, SatutResultat.OK, chunkID);
+                statut = new TaskInfo(serveurNom, listOperation, resultat, StatutResultat.OK, chunkID);
             } else if (resultat == -1) {
-                statut = new TaskInfo(serveurNom, listOperation, resultat, SatutResultat.REFUSED, chunkID);
+                statut = new TaskInfo(serveurNom, listOperation, resultat, StatutResultat.BAD_AUTHENTIFICATION, chunkID);
             } else if (resultat == -2) {
-                statut = new TaskInfo(serveurNom, listOperation, resultat, SatutResultat.BAD_AUTHENTIFICATION, chunkID);
+                statut = new TaskInfo(serveurNom, listOperation, resultat, StatutResultat.BAD_NAMESERVER, chunkID);
             } else if (resultat == -3) {
-                statut = new TaskInfo(serveurNom, listOperation, resultat, SatutResultat.BAD_NAMESERVER, chunkID);
+                statut = new TaskInfo(serveurNom, listOperation, resultat, StatutResultat.REFUSED, chunkID);
             } else {
-                statut = new TaskInfo(serveurNom, listOperation, resultat, SatutResultat.RMI_EXCEPTION, chunkID);
+                statut = new TaskInfo(serveurNom, listOperation, resultat, StatutResultat.RMI_EXCEPTION, chunkID);
             }
 
         } catch (RemoteException e) {
-            statut = new TaskInfo(serveurNom, listOperation, -4, SatutResultat.RMI_EXCEPTION, chunkID);
+            statut = new TaskInfo(serveurNom, listOperation, -4, StatutResultat.RMI_EXCEPTION, chunkID);
         }
 
         return statut;

@@ -7,4 +7,6 @@ import java.util.ArrayList;
 public interface NomsInterface extends Remote {
     ArrayList<ArrayList<String>> getCalculServerInfos() throws RemoteException;
     void addInfo(ArrayList<String> info) throws RemoteException;
+    void addClient(String username, String password) throws RemoteException;
+    boolean authentificationClient(String username, String password) throws RemoteException;
 }

@@ -11,11 +11,16 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.ArrayList;
+import java.util.Scanner;
 import java.lang.Math;
 
 import tp2.partage.*;
+import tp2.repartiteur.Task;
 
 public class Repartiteur {
+
+    private String username;
+    private String password;
 	
 	public static void main(String args[]) {	
 		// Fichier a lire
@@ -25,7 +30,10 @@ public class Repartiteur {
 		}
 
 		// Creation du repartiteur
-		Repartiteur repartiteur = new Repartiteur();
+        Repartiteur repartiteur = new Repartiteur();
+        
+        // Authentification Client
+        repartiteur.loginClient();
 
 		// Calcul du resultat
 		int resultat = repartiteur.process(fileName);
@@ -39,7 +47,10 @@ public class Repartiteur {
 	private ArrayList<CalculInterface> calculServerStubs = null;
 
 	public Repartiteur() {
-		super();
+        super();
+        
+        username = "";
+        password = "";
 
 		if (System.getSecurityManager() == null) {
 			System.setSecurityManager(new SecurityManager());
@@ -97,7 +108,23 @@ public class Repartiteur {
 		}
 
 		return stub;
-	}
+    }
+    
+    private void loginClient(){
+        Scanner sc = new Scanner(System.in);
+
+        System.out.println(" --- Connexion --- ");
+        System.out.println(" Entrer votre username ");
+        username = sc.next();
+        System.out.println(" Entrer votre mot de passe ");
+        password = sc.next();
+
+        try {
+            nomsServerStub.addClient(username, password);
+        } catch (RemoteException e) {
+            System.out.println("Erreur: " + e.getMessage());
+        }
+    }
 
 	private int process(String fileName) {
         int resultat = 0;
@@ -123,9 +150,15 @@ public class Repartiteur {
             }
             // Thread
             try {
-                int partialResult = calculServerStubs.get(0).calculate(operations);
-                System.out.println(String.valueOf(partialResult));
-                resultat += partialResult;
+
+                int partialResult = calculServerStubs.get(0).calculate(operations, username, password);
+                if (partialResult < 0){
+                    System.out.println("Error of authentification/Can't connect to server");
+                    return 0;
+                } else {
+                    System.out.println(String.valueOf(partialResult));
+                    resultat += partialResult;
+                }
             } catch (RemoteException e) {
                 System.out.println("Erreur: " + e.getMessage());
             }

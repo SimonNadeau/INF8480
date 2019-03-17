@@ -106,16 +106,27 @@ public class Calcul implements CalculInterface {
     }
 
     @Override
-    public int calculate(ArrayList<String> operations) throws RemoteException {
-        int partialResult = 0;
-        for (String item : operations){
-            String operation = item.split(" ")[0];
-            int operande = Integer.parseInt(item.split(" ")[1]);
+    public int calculate(ArrayList<String> operations, String username, String password) throws RemoteException {
 
-            partialResult += executeOperation(operation, operande);
-            partialResult %= 5000;
+        if (nomsServerStub != null){
+            if (nomsServerStub.authentificationClient(username, password)){
+                int partialResult = 0;
+                for (String item : operations){
+                    String operation = item.split(" ")[0];
+                    int operande = Integer.parseInt(item.split(" ")[1]);
+        
+                    partialResult += executeOperation(operation, operande);
+                    partialResult %= 5000;
+                }
+                return (int) partialResult;
+            } else {
+    
+                return -1; // Error of authentification
+            }
+        } else {
+
+            return -2; // Can't find server noms
         }
-        return (int) partialResult;
     }
 
     private long executeOperation(String operation, int operande){

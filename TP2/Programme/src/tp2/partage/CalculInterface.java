@@ -6,5 +6,5 @@ import java.util.ArrayList;
 
 public interface CalculInterface extends Remote {
 
-    int calculate(ArrayList<String> operations) throws RemoteException;
+    int calculate(ArrayList<String> operations, String username, String password) throws RemoteException;
 }
