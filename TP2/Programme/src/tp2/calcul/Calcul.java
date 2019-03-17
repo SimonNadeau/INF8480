@@ -21,25 +21,29 @@ public class Calcul implements CalculInterface {
     private int maliciousness;
     private String username; 
     private String password;
+    private String registryName;
     private NomsInterface nomsServerStub = null;
 
 	public static void main(String[] args) {
         int numOfTasks = 0;
         int malicious = 0;
+        String name = "";
         if (args.length >= 2) {
             numOfTasks = Integer.parseInt(args[0]);
             malicious = Integer.parseInt(args[1]);
+            name = args[2];
         } else {
             System.out.println("Wrong number of arguments");
         }
-        Calcul calcul = new Calcul(numOfTasks, malicious);
+        Calcul calcul = new Calcul(numOfTasks, malicious, name);
 		calcul.run();
 	}
 
-	public Calcul(int numOfTasks, int malicious) {
+	public Calcul(int numOfTasks, int malicious, String name) {
         super();
         numberOfTasks = numOfTasks;
         maliciousness = malicious;
+        registryName = name;
 	}
 
 	private void run() {
@@ -50,28 +54,17 @@ public class Calcul implements CalculInterface {
 		try {
             CalculInterface stub = (CalculInterface) UnicastRemoteObject.exportObject(this, 0);
             
-            // Registry registry = LocateRegistry.getRegistry();
-            NomsInterface stub2 = null;
-            Registry registry = null;
-            try {
-                registry = LocateRegistry.getRegistry("10.10.5.116");
-                stub2 = (NomsInterface) registry.lookup("noms");
-            } catch (NotBoundException e) {
-                System.out.println("Erreur: Le nom '" + e.getMessage()
-                        + "' n'est pas défini dans le registre.");
-            } catch (AccessException e) {
-                System.out.println("Erreur: " + e.getMessage());
-            } catch (RemoteException e) {
-                System.out.println("Erreur: " + e.getMessage());
-            }
-            registry.rebind("calcul", stub2);
-            nomsServerStub = stub2;
-            
+            Registry registry = LocateRegistry.getRegistry();
+            registry.rebind(registryName, stub);
             System.out.println("Server ready.");
+
+            nomsServerStub = loadNomsServerStub("127.0.0.1");
+
             if (nomsServerStub != null) {
                 ArrayList<String> info = new ArrayList<String>();
                 info.add(getIP());
                 info.add(String.valueOf(numberOfTasks));
+                info.add(registryName);
                 nomsServerStub.addInfo(info);
             }
 
@@ -107,7 +100,6 @@ public class Calcul implements CalculInterface {
         try {
             InetAddress inetAddress = InetAddress.getLocalHost();
             ip = inetAddress.toString().split("/")[1];
-            System.out.println(ip);
         } catch (UnknownHostException e) {
             System.out.println("Erreur: " + e.getMessage());
 		}

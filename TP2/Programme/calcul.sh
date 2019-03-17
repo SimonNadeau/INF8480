@@ -15,6 +15,7 @@ EndOfMessage
 IPADDR=$1
 NUM=$2
 MAL=$3
+NAME=$4
 if [ -z "$1" ]
   then
     IPADDR="127.0.0.1"
@@ -30,8 +31,13 @@ if [ -z "$3" ]
     MAL=0
 fi
 
+if [ -z "$4" ]
+  then
+    NAME="calcul"
+fi
+
 java -cp "$basepath"/calcul.jar:"$basepath"/partage.jar \
   -Djava.rmi.server.codebase=file:"$basepath"/partage.jar \
   -Djava.security.policy="$basepath"/policy \
   -Djava.rmi.server.hostname="$IPADDR" \
-  tp2.calcul.Calcul $NUM $MAL
+  tp2.calcul.Calcul $NUM $MAL $NAME

@@ -45,7 +45,7 @@ public class Repartiteur {
 			System.setSecurityManager(new SecurityManager());
 		}
 
-		nomsServerStub = loadNomsServerStub("10.10.5.116");
+		nomsServerStub = loadNomsServerStub("127.0.0.1");
 		if (nomsServerStub != null) {
 			calculServerStubs = new ArrayList<CalculInterface>();
 			ArrayList<ArrayList<String>> calculServerInfos = null;
@@ -54,7 +54,7 @@ public class Repartiteur {
 
 				for (ArrayList<String> calculServerInfo : calculServerInfos) {
 
-                    calculServerStubs.add(loadCalculServerStub(calculServerInfo.get(0)));
+                    calculServerStubs.add(loadCalculServerStub(calculServerInfo.get(0), calculServerInfo.get(2)));
                     System.out.println(calculServerInfo.get(0));
 				}
 			} catch (RemoteException e) {
@@ -81,12 +81,12 @@ public class Repartiteur {
 		return stub;
 	}
 
-	private CalculInterface loadCalculServerStub(String hostname) {
+	private CalculInterface loadCalculServerStub(String hostname, String registryName) {
 		CalculInterface stub = null;
 
 		try {
 			Registry registry = LocateRegistry.getRegistry(hostname);
-			stub = (CalculInterface) registry.lookup("calcul");
+			stub = (CalculInterface) registry.lookup(registryName);
 		} catch (NotBoundException e) {
 			System.out.println("Erreur: Le nom '" + e.getMessage()
 					+ "' n'est pas défini dans le registre.");
