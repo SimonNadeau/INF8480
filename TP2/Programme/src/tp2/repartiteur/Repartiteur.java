@@ -11,7 +11,11 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Scanner;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorCompletionService;
+import java.util.concurrent.Executors;
 import java.lang.Math;
 
 import tp2.partage.*;
@@ -42,7 +46,6 @@ public class Repartiteur {
 		System.out.println(resultat);
 	}
 
-    private static final int TAUX_DE_REFUS = 15;
 	private NomsInterface nomsServerStub = null;
 	private ArrayList<CalculInterface> calculServerStubs = null;
 
@@ -124,48 +127,77 @@ public class Repartiteur {
         } catch (RemoteException e) {
             System.out.println("Erreur: " + e.getMessage());
         }
+
+        sc.close();
     }
 
 	private int process(String fileName) {
-        int resultat = 0;
-        int chunkSize = 1;
-
-        ArrayList<String> listOperation = readFile(fileName);
-
-        try {
-            chunkSize = calculateChunkSize(Integer.parseInt(nomsServerStub.getCalculServerInfos().get(0).get(1)));
-            System.out.println(chunkSize);
-        } catch (RemoteException e) {
-			System.out.println("Erreur: " + e.getMessage());
+		if (detectMaliciousness()) {
+			return insecureProcess(fileName);
+		} else {
+			return secureProcess(fileName);
 		}
+	}
 
-        while (!listOperation.isEmpty()) {
-            System.out.println("Nouveau Chunk");
-            ArrayList<String> operations = new ArrayList<String>();
-            int i = 0;
-            while (i < chunkSize && !listOperation.isEmpty()) {
-                String item = listOperation.remove(listOperation.size()-1);
-                operations.add(item);
-                i += 1;
-            }
-            // Thread
-            try {
+	private int secureProcess(String fileName) {
+		int resultat = 0;
+		
+		ArrayList<Task> tasks = new ArrayList<Task>();
+        Executor executor = Executors.newCachedThreadPool();
+		ExecutorCompletionService<Task.TaskInfo> execService = new ExecutorCompletionService<Task.TaskInfo>(executor);
+        
+        
 
-                int partialResult = calculServerStubs.get(0).calculate(operations, username, password);
-                if (partialResult < 0){
-                    System.out.println("Error of authentification/Can't connect to server");
-                    return 0;
-                } else {
-                    System.out.println(String.valueOf(partialResult));
-                    resultat += partialResult;
-                }
-            } catch (RemoteException e) {
-                System.out.println("Erreur: " + e.getMessage());
-            }
-        }
+//         csStubs.forEach((name, stub) -> {
+//             int qty = (int)(capacities.get(name) * 2);
 
-		return resultat%5000;
-    }
+//             // Prendre les 'qty' derniers éléments de la liste d'opérations.
+//             List<OperationPair> subOps = ops.subList(Math.max(ops.size() - qty, 0), ops.size());
+
+//             // Lancer la tâche avec cette sous-liste.
+//             ClientTask task = new ClientTask(name, stub, new ArrayList<>(subOps), username, password, -1);
+//             tasks.add(task);
+
+//             // Enlever la sous-liste des opérations restantes.
+//             ops.removeAll(subOps);
+// });
+        // int chunkSize = 1;
+
+        // ArrayList<String> listOperation = readFile(fileName);
+
+        // try {
+        //     chunkSize = calculateChunkSize(Integer.parseInt(nomsServerStub.getCalculServerInfos().get(0).get(1)));
+        //     System.out.println(chunkSize);
+        // } catch (RemoteException e) {
+		// 	System.out.println("Erreur: " + e.getMessage());
+		// }
+
+        // while (!listOperation.isEmpty()) {
+        //     System.out.println("Nouveau Chunk");
+        //     ArrayList<String> operations = new ArrayList<String>();
+        //     int i = 0;
+        //     while (i < chunkSize && !listOperation.isEmpty()) {
+        //         String item = listOperation.remove(listOperation.size()-1);
+        //         operations.add(item);
+        //         i += 1;
+        //     }
+        //     // Thread
+        //     try {
+        //         int partialResult = calculServerStubs.get(0).calculate(operations);
+        //         System.out.println(String.valueOf(partialResult));
+        //         resultat += partialResult;
+        //     } catch (RemoteException e) {
+        //         System.out.println("Erreur: " + e.getMessage());
+        //     }
+        // }
+
+		return resultat % 5000;
+	}
+	
+	private int insecureProcess(String fileName) {
+        int resultat = 0;
+		return resultat % 5000;
+	}
     
     private ArrayList<String> readFile(String fileName){
         ArrayList<String> listOperation = new ArrayList<String>();
@@ -178,6 +210,7 @@ public class Repartiteur {
             while((line = br.readLine()) != null){
                 listOperation.add(line);
             }
+            br.close();
         } catch (FileNotFoundException e){
             System.out.println("Erreur: " + e.getMessage());
         } catch (IOException e) {
@@ -186,107 +219,59 @@ public class Repartiteur {
         return listOperation;
     }
 
+    private boolean detectMaliciousness() {
+		ArrayList<ArrayList<String>> calculServerInfos = null;
+		try {
+			calculServerInfos = nomsServerStub.getCalculServerInfos();
+			for (ArrayList<String> calculServerInfo : calculServerInfos) {
+				if (Integer.parseInt(calculServerInfo.get(3)) > 0) {
+					return true;
+				}
+			}
+		} catch (RemoteException e) {
+			System.out.println("Erreur: " + e.getMessage());
+		}
+
+		return false;
+    }
+    
+    private HashMap<String, ServerChunkSize> buildCalculServerEssentials() {
+        ArrayList<ArrayList<String>> calculServerInfos = null;
+        HashMap<String, ServerChunkSize> calculServerEssentials = new HashMap<String,ServerChunkSize>();
+		try {
+            calculServerInfos = nomsServerStub.getCalculServerInfos();
+            
+			for (int i = 0; i < calculServerStubs.size(); i++) {
+                ServerChunkSize item = new ServerChunkSize(calculServerStubs.get(i), Integer.parseInt(calculServerInfos.get(i).get(1)));
+                calculServerEssentials.put(calculServerInfos.get(i).get(2), item);
+            }
+        } catch (RemoteException e) {
+            System.out.println("Erreur: " + e.getMessage());
+        }
+
+        return calculServerEssentials;
+    }
+}
+
+class ServerChunkSize {
+    private static final int TAUX_DE_REFUS = 15;
+    private CalculInterface serveurCalcul;
+    private int chunkSize;
+
+    ServerChunkSize(CalculInterface serveur, int capacity) {
+        serveurCalcul = serveur;
+        chunkSize = calculateChunkSize(capacity);
+    }
+
     private int calculateChunkSize(int ressources) {
         return (int)Math.floor(5*ressources * TAUX_DE_REFUS/100 + ressources);
     }
 
+    public CalculInterface getServeurCalcul() {
+        return serveurCalcul;
+    }
+
+    public int getChunkSize() {
+        return chunkSize;
+    }
 }
-
-
-
-// import java.security.DigestInputStream;
-// import java.security.MessageDigest;
-// import java.security.NoSuchAlgorithmException;
-// import java.lang.Math.*;
-// import java.nio.charset.StandardCharsets;
-// import java.nio.file.Files;
-// import java.nio.file.Path;
-// import java.nio.file.Paths;
-// import java.nio.file.StandardOpenOption;
-// import java.util.ArrayList;
-// import java.util.Arrays;
-// import java.util.InputMismatchException;
-// import java.util.List;
-// import java.util.NoSuchElementException;
-// import java.util.Scanner;
-
-// import javax.xml.bind.DatatypeConverter;
-
-// import java.io.File;
-// import java.io.FileInputStream;
-// import java.io.FileNotFoundException;
-// import java.io.FileReader;
-// import java.io.FileWriter;
-// import java.io.IOException;
-// import java.io.InputStream;
-// import java.io.InputStreamReader;
-// import java.io.BufferedReader;
-
-// import tp2.partage.CalculInterface;
-
-// public class Repartiteur {
-
-//     private int clientId;           // Afin de savoir quel numero de client nous sommes
-//     private String login = "";      // Le nom de notre login
-
-// 	public static void main(String[] args) {
-//         String distantHostname = null;
-
-// 		if (args.length > 0) {
-// 			distantHostname = args[0];
-// 		}
-
-//         // Connexion au niveau du serveur distant
-//         Repartiteur repartiteur = new Repartiteur(distantHostname);
-//         repartiteur.connexion();
-//         if (repartiteur.clientId != 0){
-//             System.out.println("Connexion réussie");
-//         } else {
-//             System.out.println("Connexion échouée");
-//         }
-
-// 	}
-// 	private CalculInterface localServerStub = null;
-// 	// private CalculInterface distantServerStub = null;
-
-// 	public Repartiteur(String distantServerHostname) {
-//         super();
-
-// 		if (System.getSecurityManager() == null) {
-// 			System.setSecurityManager(new SecurityManager());
-// 		}
-// 		localServerStub = loadServerStub("127.0.0.1");
-
-// 		// if (distantServerHostname != null) {
-// 		// 	localServerStub = loadServerStub(distantServerHostname);
-// 		// }
-//     }
-
-//     private CalculInterface loadServerStub(String hostname) {
-// 		CalculInterface stub = null;
-
-// 		try {
-// 			Registry registry = LocateRegistry.getRegistry(hostname);
-// 			stub = (CalculInterface) registry.lookup("calcul");
-// 		} catch (NotBoundException e) {
-// 			System.out.println("Erreur: Le nom '" + e.getMessage()
-// 					+ "' n'est pas défini dans le registre.");
-// 		} catch (AccessException e) {
-// 			System.out.println("Erreur: " + e.getMessage());
-// 		} catch (RemoteException e) {
-// 			System.out.println("Erreur: " + e.getMessage());
-// 		}
-
-// 		return stub;
-// 	}
-
-//     private void connexion(){
-
-//         try {
-//             clientId = localServerStub.openSession("Mathieu");
-//         } catch (RemoteException e) {
-//             System.out.println("Erreur: " + e.getMessage());
-//         }
-//     }
-
-// }
