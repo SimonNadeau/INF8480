@@ -13,7 +13,6 @@ import java.rmi.registry.Registry;
 import java.util.ArrayList;
 import java.lang.Math;
 
-
 import tp2.partage.*;
 
 public class Repartiteur {
@@ -54,7 +53,9 @@ public class Repartiteur {
 				calculServerInfos = nomsServerStub.getCalculServerInfos();
 
 				for (ArrayList<String> calculServerInfo : calculServerInfos) {
+
                     calculServerStubs.add(loadCalculServerStub(calculServerInfo.get(0)));
+                    System.out.println(calculServerInfo.get(0));
 				}
 			} catch (RemoteException e) {
 				System.out.println("Erreur: " + e.getMessage());

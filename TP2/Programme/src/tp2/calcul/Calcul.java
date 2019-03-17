@@ -15,24 +15,8 @@ import java.util.Random;
 import tp2.partage.CalculInterface;
 import tp2.partage.NomsInterface;
 
-//java code for thread creation by extending 
-// the Thread class 
-// class MultithreadingDemo extends Thread
-// { 
-//     public void run() 
-//     { 
-//         try { 
-//             System.out.println ("Thread " + Thread.currentThread().getId() + " is running"); 
-//         } 
-//         catch (Exception e) { 
-//             System.out.println ("Exception is caught"); 
-//         } 
-//     } 
-// } 
-
 public class Calcul implements CalculInterface {
 
-    private int numberOfClients;
     private int numberOfTasks;
     private int maliciousness;
     private String username; 
@@ -41,9 +25,9 @@ public class Calcul implements CalculInterface {
 
 	public static void main(String[] args) {
         int numOfTasks = 0;
-        int malicious = 0; 
+        int malicious = 0;
         if (args.length >= 2) {
-			numOfTasks = Integer.parseInt(args[0]);
+            numOfTasks = Integer.parseInt(args[0]);
             malicious = Integer.parseInt(args[1]);
         } else {
             System.out.println("Wrong number of arguments");
@@ -54,7 +38,6 @@ public class Calcul implements CalculInterface {
 
 	public Calcul(int numOfTasks, int malicious) {
         super();
-        numberOfClients = 0;
         numberOfTasks = numOfTasks;
         maliciousness = malicious;
 	}
@@ -69,6 +52,7 @@ public class Calcul implements CalculInterface {
             
 			Registry registry = LocateRegistry.getRegistry();
             registry.rebind("calcul", stub);
+            System.out.println(String.valueOf(registry.REGISTRY_PORT));
             
             System.out.println("Server ready.");
 
@@ -76,16 +60,10 @@ public class Calcul implements CalculInterface {
 
             if (nomsServerStub != null) {
                 ArrayList<String> info = new ArrayList<String>();
-                info.add("127.0.0.1");
+                info.add(getIP());
                 info.add(String.valueOf(numberOfTasks));
                 nomsServerStub.addInfo(info);
             }
-
-            // for (int i=0; i < numberOfTasks; i++) 
-            // { 
-            //     MultithreadingDemo object = new MultithreadingDemo(); 
-            //     object.start();
-            // }
 
 		} catch (ConnectException e) {
 			System.err.println("Impossible de se connecter au registre RMI. Est-ce que rmiregistry est lancé ?");
@@ -118,7 +96,7 @@ public class Calcul implements CalculInterface {
         String ip = "";
         try {
             InetAddress inetAddress = InetAddress.getLocalHost();
-            ip = inetAddress.toString();
+            ip = inetAddress.toString().split("/")[1];
             System.out.println(ip);
         } catch (UnknownHostException e) {
             System.out.println("Erreur: " + e.getMessage());
