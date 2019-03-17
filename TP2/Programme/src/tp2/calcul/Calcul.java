@@ -110,15 +110,26 @@ public class Calcul implements CalculInterface {
 
         if (nomsServerStub != null){
             if (nomsServerStub.authentificationClient(username, password)){
-                int partialResult = 0;
-                for (String item : operations){
-                    String operation = item.split(" ")[0];
-                    int operande = Integer.parseInt(item.split(" ")[1]);
-        
-                    partialResult += executeOperation(operation, operande);
-                    partialResult %= 5000;
+                if (enoughRessources(operations.size()))
+                    if (generateRandomNumber(100) < maliciousness){
+                        System.out.println("Resultat malicieux");
+                        return generateRandomNumber(5000);
+                    } else {
+                        int partialResult = 0;
+                        for (String item : operations){
+                            String operation = item.split(" ")[0];
+                            int operande = Integer.parseInt(item.split(" ")[1]);
+                
+                            partialResult += executeOperation(operation, operande);
+                            partialResult %= 5000;
+                        }
+
+                        return (int) partialResult;
+                    }
+                else {
+
+                    return -3; // Not enough ressources
                 }
-                return (int) partialResult;
             } else {
     
                 return -1; // Error of authentification
@@ -129,22 +140,31 @@ public class Calcul implements CalculInterface {
         }
     }
 
+    private boolean enoughRessources(int numberOfOperations){
+
+        double rateOfRefusal = (((double)(numberOfOperations - numberOfTasks))/((double)(5*numberOfTasks)))*100;
+        if ((int)rateOfRefusal < generateRandomNumber(100)) {
+
+            return true;
+        }
+
+        return false;
+    }
+
     private long executeOperation(String operation, int operande){
-        if (generateRandomNumber(100) < maliciousness){
-            return generateRandomNumber(5000);
-        } else {
-            if (operation.equals("prime")){
-                // System.out.println("Calculate prime");
-                return prime(operande);
-            } 
-            else if (operation.equals("pell")){
-                // System.out.println("Calculate Pell");
-                return pell(operande);
-            } 
-            else {
-                System.out.println("unknown operation.");
-                return 0;
-            }
+
+        // System.out.println(operation + " " + String.valueOf(operande));
+        if (operation.equals("prime")){
+            // System.out.println("Calculate prime");
+            return prime(operande);
+        } 
+        else if (operation.equals("pell")){
+            // System.out.println("Calculate Pell");
+            return pell(operande);
+        } 
+        else {
+            System.out.println("unknown operation.");
+            return 0;
         }
     }
 
