@@ -50,13 +50,13 @@ public class Calcul implements CalculInterface {
 		}
 
 		try {
-            CalculInterface stub = (CalculInterface) UnicastRemoteObject.exportObject(this, 0);
+            CalculInterface stub = (CalculInterface) UnicastRemoteObject.exportObject(this, 5002);
             
-            Registry registry = LocateRegistry.getRegistry();
+            Registry registry = LocateRegistry.getRegistry(5000);
             registry.rebind(registryName, stub);
             System.out.println("Server ready.");
 
-            nomsServerStub = loadNomsServerStub("127.0.0.1");
+            nomsServerStub = loadNomsServerStub(NomsInterface.ipServeurNoms);
 
             if (nomsServerStub != null) {
                 ArrayList<String> info = new ArrayList<String>();
@@ -80,7 +80,7 @@ public class Calcul implements CalculInterface {
 		NomsInterface stub = null;
 
 		try {
-			Registry registry = LocateRegistry.getRegistry(hostname);
+			Registry registry = LocateRegistry.getRegistry(hostname, 5000);
 			stub = (NomsInterface) registry.lookup("noms");
 		} catch (NotBoundException e) {
 			System.out.println("Erreur: Le nom '" + e.getMessage()

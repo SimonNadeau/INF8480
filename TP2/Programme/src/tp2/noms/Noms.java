@@ -33,9 +33,9 @@ public class Noms implements NomsInterface {
 		}
 
 		try {
-            NomsInterface stub = (NomsInterface) UnicastRemoteObject.exportObject(this, 0);
+            NomsInterface stub = (NomsInterface) UnicastRemoteObject.exportObject(this, 5001);
 
-			Registry registry = LocateRegistry.getRegistry();
+			Registry registry = LocateRegistry.getRegistry(5000);
 			registry.rebind("noms", stub);
 			System.out.println("Serveur de noms prêt.");
 		} catch (ConnectException e) {

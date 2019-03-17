@@ -43,11 +43,15 @@ public class Repartiteur {
         // Authentification Client
         repartiteur.loginClient();
 
-		// Calcul du resultat
-		int resultat = repartiteur.process(fileName);
+        // Calcul du resultat
+        long debut = System.currentTimeMillis();
+        int resultat = repartiteur.process(fileName);
+        long fin = System.currentTimeMillis();
 
-		// Affichage du résultat
-        System.out.println(resultat);
+		// Affichage du résultat et du temps
+        System.out.println("Resultat: " + String.valueOf(resultat));
+        System.out.println("Temps: " + String.format("%d", fin - debut));
+
         System.exit(0);
 	}
 
@@ -64,7 +68,7 @@ public class Repartiteur {
 			System.setSecurityManager(new SecurityManager());
 		}
 
-		nomsServerStub = loadNomsServerStub("127.0.0.1");
+		nomsServerStub = loadNomsServerStub(NomsInterface.ipServeurNoms);
 		if (nomsServerStub != null) {
 			calculServerStubs = new ArrayList<CalculInterface>();
 			ArrayList<ArrayList<String>> calculServerInfos = null;
@@ -85,7 +89,7 @@ public class Repartiteur {
 		NomsInterface stub = null;
 
 		try {
-			Registry registry = LocateRegistry.getRegistry(hostname);
+			Registry registry = LocateRegistry.getRegistry(hostname, 5000);
 			stub = (NomsInterface) registry.lookup("noms");
 		} catch (NotBoundException e) {
 			System.out.println("Erreur: Le nom '" + e.getMessage()
@@ -103,7 +107,7 @@ public class Repartiteur {
 		CalculInterface stub = null;
 
 		try {
-			Registry registry = LocateRegistry.getRegistry(hostname);
+			Registry registry = LocateRegistry.getRegistry(hostname, 5000);
 			stub = (CalculInterface) registry.lookup(registryName);
 		} catch (NotBoundException e) {
 			System.out.println("Erreur: Le nom '" + e.getMessage()
@@ -366,6 +370,7 @@ public class Repartiteur {
         
                                         execService.submit(taskSecond);
                                         reassignedTask = true;
+                                        break;
                                     }
                                 }
 
@@ -389,6 +394,7 @@ public class Repartiteur {
     
                                     execService.submit(taskSecond);
                                     reassignedTask = true;
+                                    break;
                                 }
                             }
 
