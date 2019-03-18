@@ -21,6 +21,13 @@ public class Task implements Callable<Task.TaskInfo> {
     private String repartiteurNom;
     private String repartiteurMDP;
     
+    // The parameters of task are :
+    // - Server Name
+    // - Server itself
+    // - The list of operations to accomplish
+    // - An id associate to the list of operations
+    // - the username of the repartiteur
+    // - the password of the repartiteur
     Task(String taskNom, CalculInterface taskServeur, ArrayList<String> taskOperations, int chunkNumber, String usr, String mdp) {
         serveurNom = taskNom;
         serveurInterface = taskServeur;
@@ -39,6 +46,12 @@ public class Task implements Callable<Task.TaskInfo> {
         private StatutResultat statut;
         private int chunkID;
 
+        // The result of a task is :
+        // - the name of the server which executed it
+        // - the list of the operations that he executed
+        // - the result of the list of operations (prime, pell)
+        // - the status of the return. See enum StatusResultat
+        // - the id associate to the list of operations
         TaskInfo(String taskNom, ArrayList<String> taskOperations, int result, StatutResultat statutResultat, int chunkNumber) {
             serveurNom = taskNom;
             listOperation = taskOperations;
@@ -68,6 +81,8 @@ public class Task implements Callable<Task.TaskInfo> {
         }
     }
 
+    // When call by the repartiteur, it executes the list of operations on the calcul server and check if there has been an error.
+    // It returns it to the repartiteur
     @Override
     public TaskInfo call() throws Exception {
         try {

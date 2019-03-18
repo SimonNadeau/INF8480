@@ -26,6 +26,8 @@ public class Calcul implements CalculInterface {
         int numOfTasks = 0;
         int malicious = 0;
         String name = "";
+
+        // Parse the command line to create a compute server
         if (args.length >= 2) {
             numOfTasks = Integer.parseInt(args[0]);
             malicious = Integer.parseInt(args[1]);
@@ -37,6 +39,7 @@ public class Calcul implements CalculInterface {
 		calcul.run();
 	}
 
+    // Create "calcul" server
 	public Calcul(int numOfTasks, int malicious, String name) {
         super();
         numberOfTasks = numOfTasks;
@@ -50,14 +53,18 @@ public class Calcul implements CalculInterface {
 		}
 
 		try {
+
+            // rmi Port 5002 for calcul servers
             CalculInterface stub = (CalculInterface) UnicastRemoteObject.exportObject(this, 5002);
             
+            // rmi Port 5000 for application
             Registry registry = LocateRegistry.getRegistry(5000);
             registry.rebind(registryName, stub);
             System.out.println("Server ready.");
 
             nomsServerStub = loadNomsServerStub(NomsInterface.ipServeurNoms);
 
+            // Ajout de toutes des informations du serveur a envoyer vers le serveur de noms.
             if (nomsServerStub != null) {
                 ArrayList<String> info = new ArrayList<String>();
                 info.add(getIP());
@@ -80,6 +87,7 @@ public class Calcul implements CalculInterface {
 		NomsInterface stub = null;
 
 		try {
+            // rmi Port 5000 for application
 			Registry registry = LocateRegistry.getRegistry(hostname, 5000);
 			stub = (NomsInterface) registry.lookup("noms");
 		} catch (NotBoundException e) {
@@ -94,6 +102,7 @@ public class Calcul implements CalculInterface {
 		return stub;
 	}
 
+    // Return a string of the ip of the calcul server.
     public String getIP() {
         String ip = "";
         try {
@@ -105,6 +114,11 @@ public class Calcul implements CalculInterface {
         return ip;
     }
 
+    // Takes a short list of operations, a username and a password.
+    // If he can connect to the name server, and the username and the password match, he can go on.
+    // This function also simulates if the calcul name can accept the list of operations.
+    // This function also simulates a malicious server who sends a bad response in a fix percentage of time.
+    // it returns a number, which is sometimes an error (negative), a wrong result (can't test yet) or the good result.
     @Override
     public int calculate(ArrayList<String> operations, String username, String password) throws RemoteException {
 
@@ -113,7 +127,8 @@ public class Calcul implements CalculInterface {
                 if (enoughRessources(operations.size()))
                     if (generateRandomNumber(100) < maliciousness){
                         System.out.println("Resultat malicieux");
-                        return generateRandomNumber(5000);
+
+                        return generateRandomNumber(5000); // Resultat malicieux
                     } else {
                         int partialResult = 0;
                         for (String item : operations){
@@ -124,7 +139,7 @@ public class Calcul implements CalculInterface {
                             partialResult %= 5000;
                         }
 
-                        return (int) partialResult;
+                        return (int) partialResult; //Good result
                     }
                 else {
 
@@ -140,6 +155,7 @@ public class Calcul implements CalculInterface {
         }
     }
 
+    // Simulates if there is enough ressources for the server to accomplish the operations
     private boolean enoughRessources(int numberOfOperations){
 
         double rateOfRefusal = (((double)(numberOfOperations - numberOfTasks))/((double)(5*numberOfTasks)))*100;
@@ -151,15 +167,13 @@ public class Calcul implements CalculInterface {
         return false;
     }
 
+    // Execute one of the operation, either if it is a prime or a pell
     private long executeOperation(String operation, int operande){
 
-        // System.out.println(operation + " " + String.valueOf(operande));
         if (operation.equals("prime")){
-            // System.out.println("Calculate prime");
             return prime(operande);
         } 
         else if (operation.equals("pell")){
-            // System.out.println("Calculate Pell");
             return pell(operande);
         } 
         else {
@@ -168,10 +182,11 @@ public class Calcul implements CalculInterface {
         }
     }
 
+    // Generate a random number Between 0 and range + 1.
     public int generateRandomNumber(int range){
         Random rand = new Random();
-        return rand.nextInt(range+1); // Between 0 and range + 1.
-    }
+        return rand.nextInt(range+1);
+
 
     private long pell(int x) {
 		if (x == 0)

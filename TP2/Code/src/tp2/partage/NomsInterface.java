@@ -6,6 +6,7 @@ import java.util.ArrayList;
 
 public interface NomsInterface extends Remote {
 
+    // A MODIFIER pour le serveur de noms
     static final String ipServeurNoms = "132.207.12.45";
 
     ArrayList<ArrayList<String>> getCalculServerInfos() throws RemoteException;
