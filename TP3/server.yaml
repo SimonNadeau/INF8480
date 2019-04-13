@@ -26,6 +26,11 @@ parameters:
     default: switch1-nat
     constraints:
       - custom_constraint: neutron.network
+
+  sub_network:
+    type: string
+    description: Sous-reseau pour le load balancer
+    default: 4ba321db-9247-454b-9274-faad8ec76461
   
   key:
     type: string

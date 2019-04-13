@@ -51,9 +51,8 @@ resources:
     type: OS::Heat::ResourceGroup
     properties:
       resource_def:
-        type: server.yaml
+        type: https://raw.githubusercontent.com/SimonNadeau/INF8480/master/TP3/server.yaml
         properties:
-          name: INF8480-TP3-01-VM%index%
           image: { get_param: image }
           flavor: { get_param: flavor }
           internal_network: { get_param: internal_network }
