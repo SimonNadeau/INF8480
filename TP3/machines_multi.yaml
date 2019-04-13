@@ -51,21 +51,15 @@ resources:
     type: OS::Heat::ResourceGroup
     properties:
       resource_def:
-        type: OS::Nova::Server
+        type: server.yaml
         properties:
           name: INF8480-TP3-01-VM%index%
           image: { get_param: image }
           flavor: { get_param: flavor }
-          networks:
-            - network: { get_param: internal_network }
-          key_name: { get_param: key }
-          user_data_format: RAW
-          user_data: |
-            #!/bin/bash
-            sudo apt-get update
-            sudo apt-get install python-minimal -y
-            wget https://raw.githubusercontent.com/houssemmh/INF8480-TP3/master/server.py
-            python server.py
+          internal_network: { get_param: internal_network }
+          sub_network: { get_param: sub_network }
+          key: { get_param: key }
+          pool_id: { get_resource: pool }
       count: 3
 
   loadbalancer:

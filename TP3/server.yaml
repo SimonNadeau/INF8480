@@ -1,0 +1,66 @@
+heat_template_version: 2014-10-16
+
+
+description: Serveur simple
+
+
+parameters:
+
+  image:
+    type: string
+    description: Image pour le serveur
+    default: xenial-server-cloudimg-amd64-disk1
+    constraints:
+      - custom_constraint: glance.image
+  
+  flavor:
+    type: string
+    description: Gabarit pour le serveur
+    default: 2048-10-1-1
+    constraints:
+      - custom_constraint: nova.flavor
+  
+  internal_network:
+    type: string
+    description: Sous-reseau interne
+    default: switch1-nat
+    constraints:
+      - custom_constraint: neutron.network
+  
+  key:
+    type: string
+    description: Nom de la paire de cles
+    default: key-team1
+    constraints:
+      - custom_constraint: nova.keypair
+
+  pool_id:
+    type: string
+    description: Nom du pool
+  
+  
+resources:
+
+  server:
+    type: OS::Nova::Server
+    properties:
+      image: { get_param: image }
+      flavor: { get_param: flavor }
+      networks:
+        - network: { get_param: internal_network }
+      key_name: { get_param: key }
+      user_data_format: RAW
+      user_data: |
+        #!/bin/bash
+        sudo apt-get update
+        sudo apt-get install python-minimal -y
+        wget https://raw.githubusercontent.com/houssemmh/INF8480-TP3/master/server.py
+        python server.py
+
+  member:
+    type: OS::Neutron::LBaaS::PoolMember
+    properties:
+      pool: { get_param: pool_id }
+      address: {get_attr: [server, first_address] }
+      protocol_port: 80
+      subnet: { get_param: sub_network }
