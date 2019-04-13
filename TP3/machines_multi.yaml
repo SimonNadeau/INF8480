@@ -1,0 +1,117 @@
+heat_template_version: 2014-10-16
+
+
+description: Serveur avec plusieurs machines
+
+
+parameters:
+
+  image:
+    type: string
+    description: Image pour le serveur
+    default: xenial-server-cloudimg-amd64-disk1
+    constraints:
+      - custom_constraint: glance.image
+  
+  flavor:
+    type: string
+    description: Gabarit pour le serveur
+    default: 2048-10-1-1
+    constraints:
+      - custom_constraint: nova.flavor
+  
+  internal_network:
+    type: string
+    description: Sous-reseau interne
+    default: switch1-nat
+    constraints:
+      - custom_constraint: neutron.network
+  
+  external_network:
+    type: string
+    description: Reseau externe
+    default: 1fa7fade-2722-4677-9e2b-da22d385202b
+  
+  sub_network:
+    type: string
+    description: Sous-reseau pour le load balancer
+    default: 4ba321db-9247-454b-9274-faad8ec76461
+  
+  key:
+    type: string
+    description: Nom de la paire de cles
+    default: key-team1
+    constraints:
+      - custom_constraint: nova.keypair
+
+
+resources:
+
+  servers:
+    type: OS::Heat::ResourceGroup
+    properties:
+      resource_def:
+        type: OS::Nova::Server
+        properties:
+          name: INF8480-TP3-01-VM%index%
+          image: { get_param: image }
+          flavor: { get_param: flavor }
+          networks:
+            - network: { get_param: internal_network }
+          key_name: { get_param: key }
+          user_data_format: RAW
+          user_data: |
+            #!/bin/bash
+            sudo apt-get update
+            sudo apt-get install python-minimal -y
+            wget https://raw.githubusercontent.com/houssemmh/INF8480-TP3/master/server.py
+            python server.py
+      count: 3
+
+  loadbalancer:
+    type: OS::Neutron::LBaaS::LoadBalancer
+    properties:
+      vip_subnet: { get_param: sub_network}
+  
+  listener:
+    type: OS::Neutron::LBaaS::Listener
+    properties:
+      protocol: HTTP
+      protocol_port: 80
+      loadbalancer: { get_resource: loadbalancer}
+
+  pool:
+    type: OS::Neutron::LBaaS::Pool
+    properties:
+      protocol: HTTP
+      lb_algorithm: ROUND_ROBIN
+      listener: { get_resource: listener }
+      session_persistence:
+        type: SOURCE_IP
+
+  monitor:
+    type: OS::Neutron::LBaaS::HealthMonitor
+    properties:
+      delay: 15
+      max_retries: 1
+      pool: { get_resource: pool }
+      timeout: 5
+      type: TCP
+  
+  floating_addr:
+    type: OS::Neutron::FloatingIP
+    properties:
+      floating_network_id: { get_param: external_network }
+      port_id: { get_attr: [loadbalancer, vip_port_id] }
+
+
+outputs:
+  pool_members:
+    value: {get_attr: [pool, members]}
+    description: Pool members
+  pool_show:
+    value: {get_attr: [pool, show]}
+    description: Pool show
+  lb_show:
+    value: {get_attr: [loadbalancer, show]}
+    description: Loadbalancer show
