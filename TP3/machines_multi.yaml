@@ -56,7 +56,6 @@ resources:
           image: { get_param: image }
           flavor: { get_param: flavor }
           internal_network: { get_param: internal_network }
-          sub_network: { get_param: sub_network }
           key: { get_param: key }
           pool_id: { get_resource: pool }
       count: 3
@@ -79,6 +78,7 @@ resources:
       protocol: HTTP
       lb_algorithm: ROUND_ROBIN
       listener: { get_resource: listener }
+      loadbalancer: { get_resource: loadbalancer }
       session_persistence:
         type: SOURCE_IP
 
