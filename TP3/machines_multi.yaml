@@ -94,17 +94,17 @@ resources:
   floating_addr:
     type: OS::Neutron::FloatingIP
     properties:
-      floating_network_id: { get_param: external_network }
+      floating_network: { get_param: external_network }
       port_id: { get_attr: [loadbalancer, vip_port_id] }
 
 
 outputs:
-  pool_members:
-    value: {get_attr: [pool, members]}
-    description: Pool members
-  pool_show:
-    value: {get_attr: [pool, show]}
-    description: Pool show
-  lb_show:
-    value: {get_attr: [loadbalancer, show]}
-    description: Loadbalancer show
+  lb_ip:
+    value: {get_attr: [loadbalancer, vip_address]}
+    description: Loadbalancer ip
+  pool_port:
+    value: {get_attr: [loadbalancer, vip_port_id]}
+    description: Loadbalancer port
+  lb_subnet:
+    value: {get_attr: [loadbalancer, vip_subnet_id]}
+    description: Loadbalancer subnet

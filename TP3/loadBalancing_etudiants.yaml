@@ -6,13 +6,24 @@ parameters:
 
   image:
     type: string
-    description: Image utilisee pour les serveurs
-    #A completer
-
+    description: Image pour le serveur
+    default: xenial-server-cloudimg-amd64-disk1
+    constraints:
+      - custom_constraint: glance.image
+  
   flavor:
     type: string
-    description: Flavor utilisee par les serveurs
-    #A completer
+    description: Gabarit pour le serveur
+    default: 2048-10-1-1
+    constraints:
+      - custom_constraint: nova.flavor
+  
+  internal_network:
+    type: string
+    description: Sous-reseau interne
+    default: switch1-nat
+    constraints:
+      - custom_constraint: neutron.network
 
   subnet_id:
     type: string
@@ -22,12 +33,21 @@ parameters:
     # Vous pouvez ajouter d'autres paramètres
     # Il faut bien définir les descriptions, les valeurs par default et les contraintes
 
+
 resources:
+
   server_nodes:
       type: OS::Heat::ResourceGroup
       properties:
-      #A completer
-
+        count: 3
+        resource_def:
+          type: https://raw.githubusercontent.com/SimonNadeau/INF8480/master/TP3/server.yaml
+          properties:
+            image: { get_param: image }
+            flavor: { get_param: flavor }
+            internal_network: { get_param: internal_network }
+            key: { get_param: key }
+            pool_id: { get_resource: pool }
 
   mypool:
       type: OS::Neutron::LBaaS::Pool
