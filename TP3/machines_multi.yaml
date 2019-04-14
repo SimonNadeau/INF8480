@@ -51,7 +51,7 @@ resources:
     type: OS::Heat::ResourceGroup
     properties:
       resource_def:
-        type: https://raw.githubusercontent.com/SimonNadeau/INF8480/master/TP3/server.yaml
+        type: https://raw.githubusercontent.com/SimonNadeau/INF8480/master/TP3/server_template.yaml
         properties:
           image: { get_param: image }
           flavor: { get_param: flavor }
@@ -69,7 +69,7 @@ resources:
     type: OS::Neutron::LBaaS::Listener
     properties:
       protocol: HTTP
-      protocol_port: 80
+      protocol_port: 8080
       loadbalancer: { get_resource: loadbalancer}
 
   pool:
@@ -96,15 +96,3 @@ resources:
     properties:
       floating_network: { get_param: external_network }
       port_id: { get_attr: [loadbalancer, vip_port_id] }
-
-
-outputs:
-  lb_ip:
-    value: {get_attr: [loadbalancer, vip_address]}
-    description: Loadbalancer ip
-  pool_port:
-    value: {get_attr: [loadbalancer, vip_port_id]}
-    description: Loadbalancer port
-  lb_subnet:
-    value: {get_attr: [loadbalancer, vip_subnet_id]}
-    description: Loadbalancer subnet
